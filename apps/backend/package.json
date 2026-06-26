@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "^1.3.14"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -12,9 +12,11 @@
   "dependencies": {
     "@repo/commontypes": "workspace:*",
     "@repo/db": "workspace:*",
+    "@types/axios": "^0.14.4",
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "axios": "^1.18.1",
     "bcrypt": "^6.0.0",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
