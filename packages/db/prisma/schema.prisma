@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum Side {
+  BUY
+  SELL
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+}
+
+enum OrderStatus {
+  OPEN
+  PARTIALLY_FILLED
+  FILLED
+  CANCELLED
+  REJECTED
+}
+
+enum PositionSide {
+  LONG
+  SHORT
+}
+
+enum PositionStatus {
+  OPEN
+  CLOSED
+  LIQUIDATED
+}
+
+enum TimeInForce {
+  GTC //Good Till Cancelled
+  IOC //Immediate Or Cancel
+  FOK //Fill Or Kill
+}
+
+
+model User {
+  id             String @id @default(uuid())
+  username       String
+  email          String
+  password       String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  orders         Order[]
+  makerfills     Fill[] @relation("maker_user")
+  takerfills     Fill[] @relation("taker_user")
+  positions      Position[]
+}
+
+model Market {
+  id          String @id  @default(uuid())
+  symbol      String @unique
+  maxLeverage Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  orders      Order[]
+  fills       Fill[]
+  positions   Position[]
+}
+
+
+model Order {
+  id                String  @id @default(uuid()) 
+  side              Side
+  orderType         OrderType
+  status            OrderStatus @default(OPEN)
+
+  price             Decimal      @db.Decimal(10, 8)
+  margin            Decimal      @db.Decimal(10, 8)
+  qty               Decimal      @db.Decimal(10, 8)
+  filledQty         Decimal  @default(0) @db.Decimal(10, 8)
+  remainingQuantity Decimal  @db.Decimal(10, 8)
+  leverage          Int      @default(1)
+  timeInForce       TimeInForce  @default(GTC)
+  
+  reduceOnly        Boolean @default(false) // important for closing position
+  postOnly          Boolean @default(false) // important for maker-only orders
+
+  userId            String
+  marketId          String
+  
+  user              User      @relation(fields: [userId],references: [id])
+  market            Market    @relation(fields: [marketId],references: [id])
+  makerFills        Fill[]      @relation("maker_order")
+  takerFills        Fill[]      @relation("taker_order")
+  buyFills          Fill[]      @relation("buy_order")
+  sellFills         Fill[]      @relation("sell_order")
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+
+
+model Fill {
+  id      String   @id @default(uuid())
+  
+  maketSymbol  String 
+  makerId String
+  takerId String
+
+  makerOrderId  String
+  takerOrderId  String
+
+  buyOrderId  String
+  sellOrderId  String
+
+  price       Decimal     @db.Decimal(10, 8)
+  qty         Decimal     @db.Decimal(10, 8)
+
+  makerFee    Decimal     @default(0) @db.Decimal(10, 8) 
+  takerFee    Decimal     @default(0) @db.Decimal(10, 8)
+
+  market      Market      @relation(fields: [maketSymbol],references: [symbol])
+
+  makerUser   User        @relation("maker_user",fields: [makerId],references: [id])
+  takerUser   User        @relation("taker_user",fields: [takerId],references: [id])
+
+  makerOrder  Order       @relation("maker_order",fields: [makerOrderId],references: [id])
+  takerOrder  Order       @relation("taker_order",fields: [takerOrderId],references: [id])
+  buyOrder    Order       @relation("buy_order",fields: [buyOrderId],references: [id])
+  sellOrder   Order       @relation("sell_order",fields: [sellOrderId],references: [id])
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+
+
+
+model Position {
+  id               String    @id   @default(uuid())
+
+  side             PositionSide
+  status           PositionStatus @default(OPEN)
+
+  userId           String
+  marketSymbol      String
+
+  averagePrice     Decimal   @db.Decimal(8,4)
+  qty              Decimal   @db.Decimal(8,4)
+  
+  leverage         Int
+  margin           Decimal   @db.Decimal(8,4)
+  realizedPnl      Decimal   @default(0) @db.Decimal(8,4)
+  liquidationPrice Decimal?  @db.Decimal(8, 4)
+
+  user             User      @relation(fields: [userId], references: [id])
+  market           Market    @relation(fields: [marketSymbol], references: [symbol])
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+
