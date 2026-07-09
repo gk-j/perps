@@ -1,22 +1,17 @@
-import {z} from "zod"
+
+export enum SIDE  {
+    LONG = "LONG",
+    SHORT = "SHORT"
+}
+
+export enum ORDER_TYPE {
+    LIMIT = "LIMIT",
+    MARKET = "MARKET"
+}
 
 
 
 
-export const signupSchema = z.object(
-    {
-        username:z.string(),
-        email:z.email(),
-        password:z.string()
-    }
-)
-
-export const signinSchema = z.object(
-    {
-        email:z.email(),
-        password:z.string()
-    }
-)
 export enum HttpStatus {
   // 2xx Success
   OK = 200,
