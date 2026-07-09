@@ -7,9 +7,10 @@ import { dispatchToEngine } from "../utils/dispatchToEngine";
 export const orderRouter = Router()
 
 
-orderRouter.use(middleware)
+// orderRouter.use(middleware)
 
 orderRouter.post("/",async(req,res)=>{
+    console.log(req.body)
     const parsed = createOrderSchema.safeParse(req.body);
     if (!parsed.success) {
         return res.status(HttpStatus.BAD_REQUEST).json({ error: parsed.error });
@@ -19,7 +20,7 @@ orderRouter.post("/",async(req,res)=>{
     const payload = {
         requestId,
         type:"create_order",
-        userId:req.user.userId,
+        userId: "",
         payload:{
             requestId,
             ...data
