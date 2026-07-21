@@ -1,5 +1,21 @@
 import { ORDER_TYPE, SIDE, type createOrderPayloadSchema } from "@repo/commontypes";
 import {z} from "zod"
+import { PositonsManager } from "./utils/positionsManager.class";
+import { UserManager } from "./utils/userManager.class";
+import type { Position } from "./utils/positions.class";
+
+export let POSITIONMANAGER = new PositonsManager()
+export let USERMANAGER = new UserManager()
+
+
+export function initializeAppState(
+  positionsManager: PositonsManager,
+  userManager: UserManager,
+) {
+  POSITIONMANAGER = positionsManager;
+  USERMANAGER = userManager;
+}
+
 
 
 type PriceLevel = {

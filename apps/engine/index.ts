@@ -1,12 +1,14 @@
 // listening to stream from backend
 import { createClient } from "redis";
+import { handleIncomingEvents } from "./handlers";
+
 
 
 
 export const subscriberStream1 =  createClient()
 subscriberStream1.on('error', err => console.log('Redis Client Error', err));
 await subscriberStream1.connect();
-console.log("stream1 status",subscriberStream1.isOpen)
+console.log("stream1-subscriber status",subscriberStream1.isOpen)
 
 while(true){
     try {
@@ -16,9 +18,12 @@ while(true){
 
         if(!response || !Array.isArray(response)) continue
         for (const msg of response[0]?.messages){
-            console.log(JSON.parse(msg.message.data))
+            const parsedData = JSON.parse(msg.message.data);
+            console.log(parsedData)
+            await handleIncomingEvents(parsedData)
         }
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        continue
     }
 }

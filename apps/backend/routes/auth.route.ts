@@ -1,15 +1,17 @@
 
-import { HttpStatus, signinSchema, signupSchema } from "@repo/commontypes";
+import { eventEnums, HttpStatus, signinSchema, signupSchema } from "@repo/commontypes";
 import { prisma } from "@repo/db";
 import { Router, type Request, type Response } from "express";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
+import { dispatchToEngine } from "../utils/dispatchToEngine";
 
 export const authRouter = Router()
 
 
 authRouter.post("/signup",async(req:Request,res:Response)=>{
     try {
+        console.log(req.body)
         const {username,email,password} = req.body
         const result = signupSchema.safeParse(req.body)
         if(!result.success){
@@ -41,7 +43,17 @@ authRouter.post("/signup",async(req:Request,res:Response)=>{
                 id:true
             }
         })
-        return res.status(HttpStatus.OK).json({
+        const requestId = crypto.randomUUID();
+        const payload = {
+            requestId: requestId,
+            kind:eventEnums.CREATE_USER,
+            payload: {
+                userId: createdUser.id,
+            },
+        }
+        const resp = await dispatchToEngine(payload, requestId);
+        console.log(resp)
+        return res.status(HttpStatus.CREATED).json({
             message:"Account Created Sucessfully"
         })
     } catch (error) {
